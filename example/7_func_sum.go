@@ -5,11 +5,11 @@ package main
 import "fmt"
 
 func main() {
-	v := []int{1,2,4}
+	v := []int{1, 2, 4}
 	fmt.Println(sum(v))
 }
 
-func sum (slice []int) int{
+func sum(slice []int) int {
 	total := 0
 	for _, v := range slice {
 		total += v
