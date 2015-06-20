@@ -40,7 +40,6 @@ func main() {
 		result += i
 	}
 
-	fmt.Println(result)
 	result := strconv.Itoa(result)
 	ioutil.WriteFile(output, []byte(result), 0644)
 
