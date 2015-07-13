@@ -10,9 +10,9 @@ import (
 func main() {
 	client := http.Client{}
 
-	request, err := http.NewRequest("GET", "http://noc.naukanet.ru/sa/managedobject/6021", nil)
-	request.SetBasicAuth("login", "pass")
-	resp, err := client.Do(request)
+	req, err := http.NewRequest("GET", "http://noc.naukanet.ru/sa/managedobject/6021", nil)
+	req.SetBasicAuth("login", "pass")
+	resp, err := client.Do(req)
 
 	if err != nil {
 		log.Fatalln(err)
