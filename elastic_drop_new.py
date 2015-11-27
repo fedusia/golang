@@ -2,10 +2,13 @@
 
 import requests
 
-indices = []
-x = 9
 
-response = requests.get('http://elk-102.ix.km:9200/_cluster/health')
+x = 9
+host = 'elk-102.ix.km'
+exludes = 'filename1 filename2 filename3'
+
+response = requests.get('http://%s:9200/_cluster/health' % host)
+print response
 if response.status_code != 200:
 	# TODO: Do error message to log file
 	print ('Wrong response, %s') % response.status_code
@@ -21,11 +24,15 @@ if responseBody['status'] != 'green':
 
 print ('Cluster Status is: %s') % responseBody['status']
 
-# http_req = requests.get('http://elk-102.ix.km:9200/_cat/indices?v')
-# http_text = http_req.text
-# text = http_text.split()
-# print text
+response = requests.get('http://%s:9200/_cat/indices' % host)
+responseBody = response.text
+#print responseBody
+responseData = responseBody.split('\n')
+for i in responseData:
+	print i
+
 # i = len(text)
+#indices = []
 # while x < i:
 # indices.append(text[x])
 # x = x + 8
