@@ -57,7 +57,7 @@ func main() {
 	}
 	err = json.Unmarshal(body, &cluster)
 	if err != nil {
-		log.Fatalf("error:", err)
+		log.Fatalf("error: %s", err)
 	}
 	if cluster.Status != clusterStatusOk {
 		log.Fatalf("Cluster status is: %s!!! Do nothing ", cluster.Status)

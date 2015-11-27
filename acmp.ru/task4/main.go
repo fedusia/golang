@@ -3,7 +3,7 @@ package main
 import (
 	"io/ioutil"
 	"log"
-	"fmt"
+//	"fmt"
 	"strconv"
 )
 
@@ -22,6 +22,6 @@ func main() {
 	//5 594
 	b := 9
 	c := b - a
-	//d := 
-	fmt.Println(a,b,c)
+	//d := abc 
+	ioutil.WriteFile(output, []byte(a,b,c), 0644)
 }
