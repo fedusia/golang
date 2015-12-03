@@ -5,7 +5,6 @@ import requests
 
 x = 9
 host = 'elk-102.ix.km'
-exludes = 'filename1 filename2 filename3'
 
 response = requests.get('http://%s:9200/_cluster/health' % host)
 print response
@@ -26,10 +25,12 @@ print ('Cluster Status is: %s') % responseBody['status']
 
 response = requests.get('http://%s:9200/_cat/indices' % host)
 responseBody = response.text
+print type(responseBody)
+#responseBody = responseBody.split('\n')
 #print responseBody
-responseData = responseBody.split('\n')
-for i in responseData:
-	print i
+#for i in responseBody:
+#	array = i.split(' ')
+#	print array[1]
 
 # i = len(text)
 #indices = []

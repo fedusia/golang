@@ -14,7 +14,7 @@ const (
 	excludeFile     = "./elastic_exlude.txt"
 )
 
-type myStruct struct {
+type myCluster struct {
 	Status string `json:"status"`
 }
 
@@ -22,8 +22,12 @@ type myConfig struct {
 	ExcludedFileNames []string
 }
 
+type myIndicies struct {
+	indices map[string]map[string]string `json: indices`
+}
+
 var (
-	cluster myStruct
+	cluster myCluster
 	config  myConfig
 )
 
@@ -63,7 +67,7 @@ func main() {
 		log.Fatalf("Cluster status is: %s!!! Do nothing ", cluster.Status)
 	}
 
-	ClusterIndicesUrl := fmt.Sprint("http://" + elasticHost + ":9200/_cat/indices?pretty")
+	ClusterIndicesUrl := fmt.Sprint("http://" + elasticHost + ":9200/_stats?pretty")
 	resp, err = http.Get(ClusterIndicesUrl)
 	if err != nil {
 		log.Fatalf("Error: %s", err)
@@ -78,4 +82,11 @@ func main() {
 		log.Fatalf("Couldn't read data: %v", body)
 	}
 	fmt.Println(string(body))
+	indicies := []myIndicies{}
+
+	err = json.Unmarshal(body, &indicies)
+	if err != nil {
+		log.Fatalf("error:", err)
+	}
+	fmt.Println(indicies)
 }
