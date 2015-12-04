@@ -22,13 +22,14 @@ type myConfig struct {
 	ExcludedFileNames []string
 }
 
-type myIndicies struct {
-	indices map[string]map[string]string `json: indices`
-}
+// type myIndicies struct {
+// 	indices map[string]map[string]string `json: indices`
+// }
 
 var (
 	cluster myCluster
 	config  myConfig
+	f       interface{}
 )
 
 func main() {
@@ -82,11 +83,10 @@ func main() {
 		log.Fatalf("Couldn't read data: %v", body)
 	}
 	fmt.Println(string(body))
-	indicies := []myIndicies{}
 
-	err = json.Unmarshal(body, &indicies)
+	err = json.Unmarshal(body, &f)
 	if err != nil {
 		log.Fatalf("error:", err)
 	}
-	fmt.Println(indicies)
+	fmt.Println(f)
 }
