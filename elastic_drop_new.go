@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
 )
 
 const (
@@ -22,14 +23,18 @@ type myConfig struct {
 	ExcludedFileNames []string
 }
 
-// type myIndicies struct {
-// 	indices map[string]map[string]string `json: indices`
-// }
+type myIndices struct {
+	Indices map[string]interface{}
+}
 
 var (
 	cluster myCluster
 	config  myConfig
-	f       interface{}
+	parsed  map[string]interface{}
+	a       []string
+	indices []string
+
+//	f       interface{}
 )
 
 func main() {
@@ -68,7 +73,7 @@ func main() {
 		log.Fatalf("Cluster status is: %s!!! Do nothing ", cluster.Status)
 	}
 
-	ClusterIndicesUrl := fmt.Sprint("http://" + elasticHost + ":9200/_stats?pretty")
+	ClusterIndicesUrl := fmt.Sprint("http://" + elasticHost + ":9200/_cat/indices")
 	resp, err = http.Get(ClusterIndicesUrl)
 	if err != nil {
 		log.Fatalf("Error: %s", err)
@@ -84,9 +89,21 @@ func main() {
 	}
 	fmt.Println(string(body))
 
-	err = json.Unmarshal(body, &f)
-	if err != nil {
-		log.Fatalf("error:", err)
+	s := string(body)
+	tmp := strings.Split(s, "\n")
+	fmt.Println(tmp)
+	//a:=[]string
+
+	for i := 0; i < len(tmp)-1; i++ {
+		a = strings.Split(tmp[i], " ")
+		indices[i] = a[1]
 	}
-	fmt.Println(f)
+	//fmt.Println(a)
+	// f := myIndices{}
+	// err = json.Unmarshal(body, &f)
+	// if err != nil {
+	// 	log.Fatalf("error:", err)
+	// }
+	// fmt.Println(f)
+
 }
