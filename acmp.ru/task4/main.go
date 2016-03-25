@@ -3,10 +3,13 @@ package main
 import (
 	"io/ioutil"
 	"log"
-//	"fmt"
+	"fmt"
 	"strconv"
 )
 
+const (
+	b = 9
+)
 var (
 	input = "./INPUT.TXT"
 	output = "./OUTPUT.TXT"
@@ -19,9 +22,12 @@ func main() {
 	}
 	line := string(bytes)
 	a, err := strconv.Atoi(line)
-	//5 594
-	b := 9
+	fmt.Println(a)
 	c := b - a
-	//d := abc 
-	ioutil.WriteFile(output, []byte(a,b,c), 0644)
+	d := fmt.Sprintf("%d%d%d",a, b, c)
+	fmt.Println(d)
+	err = ioutil.WriteFile(output, []byte(d), 0644)
+	if err != nil {
+		log.Fatalln(err)
+	}
 }
