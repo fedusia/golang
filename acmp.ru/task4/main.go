@@ -22,10 +22,8 @@ func main() {
 	}
 	line := string(bytes)
 	a, err := strconv.Atoi(line)
-	fmt.Println(a)
 	c := b - a
 	d := fmt.Sprintf("%d%d%d",a, b, c)
-	fmt.Println(d)
 	err = ioutil.WriteFile(output, []byte(d), 0644)
 	if err != nil {
 		log.Fatalln(err)
