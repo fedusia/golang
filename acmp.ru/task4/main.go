@@ -1,17 +1,18 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
-	"fmt"
 	"strconv"
 )
 
 const (
 	b = 9
 )
+
 var (
-	input = "./INPUT.TXT"
+	input  = "./INPUT.TXT"
 	output = "./OUTPUT.TXT"
 )
 
@@ -23,7 +24,7 @@ func main() {
 	line := string(bytes)
 	a, err := strconv.Atoi(line)
 	c := b - a
-	d := fmt.Sprintf("%d%d%d",a, b, c)
+	d := fmt.Sprintf("%d%d%d", a, b, c)
 	err = ioutil.WriteFile(output, []byte(d), 0644)
 	if err != nil {
 		log.Fatalln(err)
