@@ -7,7 +7,7 @@ import "fmt"
 func main() {
 	resp, err  := http.Get("http://tts.naukanet.ru")
 	req, err := http.NewRequest("GET", "http://tts.naukanet.ru", nil)
-	req.SetBasicAuth("d.fedorov", "ilWacfiOd")
+	req.SetBasicAuth("", "")
 	resp, err := resp.Do(req)
 	if err != nil {
 		fmt.Println(err)
