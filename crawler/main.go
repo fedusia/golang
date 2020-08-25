@@ -3,6 +3,8 @@ package main
 import (
 	"bufio"
 	"compress/gzip"
+	"crypto/tls"
+	"encoding/csv"
 	"fmt"
 	"io"
 	"log"
@@ -21,15 +23,27 @@ type Domain struct {
 	TLSVer   string
 }
 
+// TODO: rewrite this sheet to reflect
+func (d Domain) Write() []string {
+	s := []string{d.Name, d.TLSVer}
+	return s
+}
+
 func main() {
-	var zones [1]string
-	var err error
+	var (
+		zones [1]string
+		err   error
+	)
+	const (
+		workers = 200
+	)
 	zones[0] = "ru"
 
+	zoneUrl := fmt.Sprintf("https://partner.r01.ru/zones/%s_domains.gz", zones[0])
 	zoneFile := fmt.Sprintf("%s_zone.gz", zones[0])
-	zoneFileDecompressed := "zone_ru"
+	zoneFileDecompressed := fmt.Sprintf("%s_zone", zones[0])
 
-	err := DownloadFile(zoneFile, zoneUrl)
+	err = DownloadFile(zoneFile, zoneUrl)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -39,7 +53,7 @@ func main() {
 	}
 
 	Domains := LoadData(zoneFileDecompressed)
-	err = CheckTLSVersion(Domains)
+	CheckTLSVersion(Domains, workers)
 }
 
 func DownloadFile(filepath string, url string) error {
@@ -130,24 +144,75 @@ func LoadData(dataFilePath string) []Domain {
 	return Domains
 }
 
-func CheckTLSVersion(Domains []Domain) error {
-	var err error
-	var wg sync.WaitGroup
-	for i := 1; i < len(Domains); i++ {
+func CheckTLSVersion(Domains []Domain, workers int) {
+	var (
+		wg  sync.WaitGroup
+		ch  = make(chan Domain)
+		ch2 = make(chan Domain)
+	)
+	// create threads waiting on channel
+	for i := 1; i < workers; i++ {
 		wg.Add(1)
-		go SendRequest(Domains[i])
+		go WrapSendRequest(ch, ch2, &wg)
 	}
+
+	// create writer to csv
+	wg.Add(1)
+	go WriteCSVFile(ch2)
+
+	// Generate data and send to channel
+	for i := 1; i < len(Domains); i++ {
+		ch <- Domains[i]
+	}
+	// wait while all goroutines  will finish work
 	wg.Wait()
-	return err
 }
 
-func SendRequest(domain Domain) error {
-	url := fmt.Sprintf("https://%s", domain.Name)
-	resp, err := http.Get(url)
-	if err != nil {
-		log.Println(err)
-		return err
+func WrapSendRequest(ch chan Domain, ch2 chan Domain, wg *sync.WaitGroup) {
+	// read data from channel and do staff
+	for domain := range ch {
+		domain = SendRequest(domain)
+		ch2 <- domain
 	}
-	fmt.Println(resp.TLS)
-	return err
+	// when no data in the channel finish goroutine
+	wg.Done()
+}
+func WriteCSVFile(ch chan Domain) {
+	fd, _ := os.Create("./out.csv")
+	w := csv.NewWriter(fd)
+	for domain := range ch {
+		w.Write(domain.Write())
+		fmt.Printf("TLSVer: Domain: %s %s TLSVerEnd\n", domain.Name, domain.TLSVer)
+	}
+}
+func SendRequest(domain Domain) Domain {
+	var (
+		tlsVersion string
+	)
+	url := fmt.Sprintf("https://%s", domain.Name)
+	client := &http.Client{CheckRedirect: func(req *http.Request, via []*http.Request) error { return http.ErrUseLastResponse }}
+	resp, err := client.Get(url)
+	if err != nil {
+		//log.Println(err)
+		domain.TLSVer = "Could not connect to by https"
+		return domain
+	}
+	if resp.StatusCode == 200 {
+		log.Printf("domain: %s status code: %d", domain.Name, resp.StatusCode)
+		if resp.TLS.Version == tls.VersionTLS10 {
+			tlsVersion = "TLS 1.0"
+		} else if resp.TLS.Version == tls.VersionTLS11 {
+			tlsVersion = "TLS 1.1"
+		} else if resp.TLS.Version == tls.VersionTLS12 {
+			tlsVersion = "TLS 1.2"
+		} else if resp.TLS.Version == tls.VersionTLS13 {
+			tlsVersion = "TLS 1.3"
+		} else if resp.TLS.Version == tls.VersionSSL30 {
+			tlsVersion = "SSLv3"
+		} else {
+			tlsVersion = "unknown"
+		}
+		domain.TLSVer = tlsVersion
+	}
+	return domain
 }
